@@ -17,7 +17,7 @@ SECRET_KEY = os.environ.get(
     "django-insecure-change-this-later"
 )
 
-DEBUG = os.getenv("DEBUG", "false") == "True"
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = [
     "shopkart-6-bg7g.onrender.com",
