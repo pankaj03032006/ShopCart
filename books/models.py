@@ -2,7 +2,28 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 class Book(models.Model):
-    """Book model - must be defined first"""
+    CATEGORY_CHOICES = [
+        ("Academic", "Academic"),
+        ("Competitive Exams", "Competitive Exams"),
+        ("School", "School"),
+        ("College", "College"),
+        ("Engineering", "Engineering"),
+        ("Medical", "Medical"),
+        ("Novel", "Novel"),
+        ("Story", "Story"),
+        ("Comics", "Comics"),
+        ("History", "History"),
+        ("Science", "Science"),
+        ("Programming", "Programming"),
+        ("Other", "Other"),
+    ]
+
+    category = models.CharField(
+        max_length=100,
+        choices=CATEGORY_CHOICES,
+        blank=True,
+        null=True
+    )
     title = models.CharField(max_length=200)
     author = models.CharField(max_length=200)
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -10,7 +31,7 @@ class Book(models.Model):
     image = models.ImageField(upload_to='book_images/', blank=True, null=True)
     seller_name = models.CharField(max_length=200, blank=True, null=True)
     seller = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='books')
-    category = models.CharField(max_length=100, blank=True, null=True)
+   
     language = models.CharField(max_length=50, default='English')
     isbn = models.CharField(max_length=20, blank=True, null=True)
     mrp = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)

@@ -13,6 +13,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 from django.conf import settings
+from django.urls import reverse
 
 
 # ==================== HOME VIEW ====================
@@ -131,109 +132,249 @@ def seller_login_required(view_func):
     return wrapper
 
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
+from django.db.models import Q, Avg, Sum, Count
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.contrib.admin.views.decorators import staff_member_required
+from django.conf import settings
+import json
+import logging
+import razorpay
+
+from .models import Book, Cart, Address, BookImage, Review, Report, SellerVerification, SystemSettings
+from orders.models import Order
+from accounts.models import Seller
+from .forms import BookForm
+
+logger = logging.getLogger(__name__)
+
+
+# =============================================
+# SELLER LOGIN REQUIRED DECORATOR
+# =============================================
+def seller_login_required(view_func):
+    """Custom decorator that redirects to seller login page"""
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            from django.urls import reverse
+            next_url = request.get_full_path()
+            return redirect(f"{reverse('accounts:seller_login')}?next={next_url}")
+        
+        # Check if user is a seller
+        try:
+            seller = Seller.objects.get(user=request.user)
+        except Seller.DoesNotExist:
+            messages.error(request, 'Please register as a seller first')
+            return redirect('accounts:seller_signup')
+        
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+# =============================================
+# SELL BOOK VIEW - COMPLETE WITH AJAX SUPPORT
+# =============================================
 @seller_login_required
 def sell_book(request):
-    """View for sellers to add new books to their inventory with multiple images"""
-    try:
-        seller = Seller.objects.get(user=request.user)
-    except Seller.DoesNotExist:
-        messages.error(request, 'Please register as a seller first')
-        return redirect('accounts:seller_signup')
+    """
+    View for sellers to add new books to their inventory with multiple images
+    Supports both regular form submission and AJAX requests
+    """
     
+    # Handle POST request
     if request.method == 'POST':
+        # Check if this is an AJAX request
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        # Get form data
+        title = request.POST.get('title', '').strip()
+        author = request.POST.get('author', '').strip()
+        price = request.POST.get('price', '').strip()
+        category = request.POST.get('category', '')
+        description = request.POST.get('description', '').strip()
+        image = request.FILES.get('image')
+        stock = request.POST.get('stock', 0)
+        language = request.POST.get('language', 'English')
+        isbn = request.POST.get('isbn', '')
+        mrp = request.POST.get('mrp', '')
+        low_stock_threshold = request.POST.get('low_stock_threshold', 5)
+        extra_images = request.FILES.getlist('extra_images')
+        
+        # Collect validation errors
+        errors = []
+        
+        # Validate title
+        if not title:
+            errors.append('Book title is required')
+        elif len(title) < 2:
+            errors.append('Book title must be at least 2 characters')
+        elif len(title) > 200:
+            errors.append('Book title must be less than 200 characters')
+        
+        # Validate author
+        if not author:
+            errors.append('Author name is required')
+        elif len(author) < 2:
+            errors.append('Author name must be at least 2 characters')
+        elif len(author) > 100:
+            errors.append('Author name must be less than 100 characters')
+        
+        # Validate price
+        if not price:
+            errors.append('Price is required')
+        else:
+            try:
+                price_float = float(price)
+                if price_float <= 0:
+                    errors.append('Price must be greater than 0')
+                elif price_float > 100000:
+                    errors.append('Price cannot exceed ₹100,000')
+                else:
+                    price = price_float
+            except ValueError:
+                errors.append('Please enter a valid price')
+        
+        # Validate MRP
+        if mrp:
+            try:
+                mrp_float = float(mrp)
+                if mrp_float < 0:
+                    errors.append('MRP must be greater than 0')
+                elif mrp_float < price:
+                    errors.append('MRP should be greater than or equal to selling price')
+                else:
+                    mrp = mrp_float
+            except ValueError:
+                errors.append('Please enter a valid MRP')
+        else:
+            mrp = None
+        
+        # Validate image
+        if not image:
+            errors.append('Book cover image is required')
+        else:
+            # Validate image type
+            valid_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+            if image.content_type not in valid_types:
+                errors.append('Please upload a valid image (JPEG, PNG, GIF, WEBP)')
+            
+            # Validate image size (max 5MB)
+            if image.size > 5 * 1024 * 1024:
+                errors.append('Image size must be less than 5MB')
+        
+        # Validate stock
         try:
-            # Get form data
-            title = request.POST.get('title', '').strip()
-            author = request.POST.get('author', '').strip()
-            price = request.POST.get('price', '').strip()
-            category = request.POST.get('category', '')
-            description = request.POST.get('description', '').strip()
-            image = request.FILES.get('image')
-            stock = request.POST.get('stock', 0)
-            language = request.POST.get('language', 'English')
-            isbn = request.POST.get('isbn', '')
-            mrp = request.POST.get('mrp', '')
-            low_stock_threshold = request.POST.get('low_stock_threshold', 5)
-            
-            # Validation
-            if not title:
-                messages.error(request, 'Book title is required')
-                return render(request, 'books/sell_book.html')
-            
-            if not author:
-                messages.error(request, 'Author name is required')
-                return render(request, 'books/sell_book.html')
-            
-            if not price:
-                messages.error(request, 'Price is required')
-                return render(request, 'books/sell_book.html')
-            
-            try:
-                price = float(price)
-                if price <= 0:
-                    messages.error(request, 'Price must be greater than 0')
-                    return render(request, 'books/sell_book.html')
-            except ValueError:
-                messages.error(request, 'Please enter a valid price')
-                return render(request, 'books/sell_book.html')
-            
-            if not image:
-                messages.error(request, 'Book image is required')
-                return render(request, 'books/sell_book.html')
-            
-            # Validate stock
-            try:
-                stock = int(stock)
-                if stock < 0:
-                    stock = 0
-            except ValueError:
+            stock = int(stock)
+            if stock < 0:
                 stock = 0
-            
-            # Validate low_stock_threshold
-            try:
-                low_stock_threshold = int(low_stock_threshold)
-                if low_stock_threshold < 1:
-                    low_stock_threshold = 5
-            except ValueError:
+        except (ValueError, TypeError):
+            stock = 0
+        
+        # Validate low_stock_threshold
+        try:
+            low_stock_threshold = int(low_stock_threshold)
+            if low_stock_threshold < 1:
                 low_stock_threshold = 5
-            
-            # Create the book with stock
-            book = Book.objects.create(
-                title=title,
-                author=author,
-                price=price,
-                category=category,
-                description=description,
-                image=image,
-                seller=request.user,
-                seller_name=request.user.get_full_name() or request.user.username,
-                stock=stock,
-                language=language,
-                isbn=isbn,
-                mrp=float(mrp) if mrp else None,
-                low_stock_threshold=low_stock_threshold,
-                is_active=True
-            )
-            
-            # Handle extra images
-            extra_images = request.FILES.getlist('extra_images')
-            for extra_image in extra_images:
-                if extra_image and extra_image.size <= 5 * 1024 * 1024:
-                    BookImage.objects.create(
-                        book=book,
-                        image=extra_image,
-                        caption=f"{title} - Additional image"
-                    )
-            
-            messages.success(request, f'"{title}" has been successfully added to your store!')
-            return redirect('accounts:seller_dashboard')
-            
+        except (ValueError, TypeError):
+            low_stock_threshold = 5
+        
+        # If there are validation errors
+        if errors:
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'message': errors[0],
+                    'errors': errors,
+                    'error_count': len(errors)
+                }, status=400)
+            else:
+                for error in errors:
+                    messages.error(request, error)
+                return render(request, 'books/sell_book.html', {
+                    'form_data': request.POST,
+                    'errors': errors
+                })
+        
+        # Try to create the book
+        try:
+            with transaction.atomic():
+                # Create the book
+                book = Book.objects.create(
+                    title=title,
+                    author=author,
+                    price=price,
+                    category=category,
+                    description=description,
+                    image=image,
+                    seller=request.user,
+                    seller_name=request.user.get_full_name() or request.user.username,
+                    stock=stock,
+                    language=language or 'English',
+                    isbn=isbn,
+                    mrp=mrp,
+                    low_stock_threshold=low_stock_threshold,
+                    is_active=True
+                )
+                
+                # Handle extra images (max 5)
+                extra_image_count = 0
+                for extra_image in extra_images[:5]:
+                    if extra_image and extra_image.size <= 5 * 1024 * 1024:
+                        try:
+                            BookImage.objects.create(
+                                book=book,
+                                image=extra_image,
+                                caption=f"{title} - Additional image {extra_image_count + 1}"
+                            )
+                            extra_image_count += 1
+                        except Exception as img_error:
+                            logger.warning(f"Failed to upload extra image: {str(img_error)}")
+                
+                logger.info(f"Book created: {book.title} by {book.author} (ID: {book.id})")
+                
+                # Return success response
+                if is_ajax:
+                    return JsonResponse({
+                        'success': True,
+                        'message': f'"{title}" has been successfully added to your store! 🎉',
+                        'book_id': book.id,
+                        'book_title': book.title,
+                        'book_author': book.author,
+                        'book_price': str(book.price),
+                        'redirect_url': reverse("accounts:seller_dashboard"),
+                        'extra_images_count': extra_image_count
+                    })
+                else:
+                    messages.success(request, f'"{title}" has been successfully added to your store!')
+                    return redirect('accounts:seller_dashboard')
+                
         except Exception as e:
-            messages.error(request, f'Error uploading book: {str(e)}')
-            return render(request, 'books/sell_book.html')
+            logger.error(f"Error creating book: {str(e)}", exc_info=True)
+            error_message = f'Error uploading book: {str(e)}'
+            
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'message': error_message,
+                    'error': str(e)
+                }, status=500)
+            else:
+                messages.error(request, error_message)
+                return render(request, 'books/sell_book.html', {
+                    'form_data': request.POST
+                })
     
-    return render(request, 'books/sell_book.html')
-
+    # GET request - show empty form
+    return render(request, 'books/sell_book.html', {
+        'categories': Book.CATEGORY_CHOICES,
+        'languages': ['English', 'Hindi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Bengali', 'Marathi', 'Gujarati', 'Urdu', 'Punjabi', 'Sanskrit']
+    })
 
 # ==================== EDIT BOOK VIEW ====================
 @login_required

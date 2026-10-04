@@ -525,7 +525,7 @@
     </div>
 </div>
 
-<script> 
+<script>
     // File upload preview
     const imageUpload = document.getElementById('imageUpload');
     const fileName = document.getElementById('fileName');
@@ -580,45 +580,8 @@
         });
     }
 
-    // Form validation
-    const form = document.getElementById('sellBookForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            const title = document.getElementById('title').value.trim();
-            const author = document.getElementById('author').value.trim();
-            const price = document.getElementById('price').value;
-            const image = document.getElementById('imageUpload').files[0];
-
-            if (!title) {
-                e.preventDefault();
-                alert('Please enter the book title');
-                document.getElementById('title').focus();
-                return false;
-            }
-
-            if (!author) {
-                e.preventDefault();
-                alert('Please enter the author name');
-                document.getElementById('author').focus();
-                return false;
-            }
-
-            if (!price || price <= 0) {
-                e.preventDefault();
-                alert('Please enter a valid price');
-                document.getElementById('price').focus();
-                return false;
-            }
-
-            if (!image) {
-                e.preventDefault();
-                alert('Please upload a book cover image');
-                return false;
-            }
-
-            return true;
-        });
-    }
+    // Form validation - REMOVE this and use Django's built-in validation
+    // OR keep it but don't use fetch/JSON
 
     // Add focus effects
     const inputs = document.querySelectorAll('.form-control');
@@ -632,6 +595,98 @@
             if (icon && !this.value) icon.style.color = '#94a3b8';
         });
     });
- </script> 
+
+    // ==========================================
+    // OPTION 1: Standard Form Submit (Recommended)
+    // ==========================================
+    // Just use the normal form submit - Django will handle validation
+    // No additional JavaScript needed for submission
+
+    // ==========================================
+    // OPTION 2: AJAX Form Submit with CSRF
+    // ==========================================
+    // If you want AJAX submission, use this:
+
+    /*
+    const sellForm = document.getElementById('sellBookForm');
+    if (sellForm) {
+        sellForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('.btn-submit');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Uploading...';
+            submitBtn.disabled = true;
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCSRFToken()
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(text);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || '/seller/dashboard/';
+                    }, 1500);
+                } else {
+                    showMessage(data.message || 'Error uploading book', 'error');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('An error occurred. Please try again.', 'error');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+    }
+
+    function getCSRFToken() {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            document.cookie.split(';').forEach(cookie => {
+                cookie = cookie.trim();
+                if (cookie.startsWith('csrftoken=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(10));
+                }
+            });
+        }
+        return cookieValue;
+    }
+
+    function showMessage(message, type) {
+        const container = document.getElementById('messagesContainer');
+        if (!container) return;
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert-message alert-${type}`;
+        const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+        alertDiv.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
+        container.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            alertDiv.style.opacity = '0';
+            alertDiv.style.transition = 'opacity 0.3s';
+            setTimeout(() => alertDiv.remove(), 300);
+        }, 5000);
+    }
+    */
+</script>
 
  {% endblock %} 

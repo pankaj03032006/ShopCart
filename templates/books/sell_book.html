@@ -2,6 +2,9 @@
 
 {% block content %}
 <style>
+    /* ============================================
+       SELL BOOK PAGE STYLES
+       ============================================ */
     .sell-container {
         min-height: calc(100vh - 200px);
         display: flex;
@@ -13,7 +16,6 @@
         overflow: hidden;
     }
 
-    /* Animated background */
     .sell-container::before {
         content: '';
         position: absolute;
@@ -23,7 +25,7 @@
         border-radius: 50%;
         top: -150px;
         right: -150px;
-        animation: float 6s ease-in-out infinite;
+        animation: floatBg 6s ease-in-out infinite;
     }
 
     .sell-container::after {
@@ -35,10 +37,10 @@
         border-radius: 50%;
         bottom: -100px;
         left: -100px;
-        animation: float 8s ease-in-out infinite reverse;
+        animation: floatBg 8s ease-in-out infinite reverse;
     }
 
-    @keyframes float {
+    @keyframes floatBg {
         0%, 100% { transform: translateY(0) rotate(0deg); }
         50% { transform: translateY(-20px) rotate(10deg); }
     }
@@ -106,10 +108,10 @@
         justify-content: center;
         margin: 0 auto 20px;
         position: relative;
-        animation: pulse 2s ease-in-out infinite;
+        animation: pulseIcon 2s ease-in-out infinite;
     }
 
-    @keyframes pulse {
+    @keyframes pulseIcon {
         0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
         50% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
     }
@@ -138,7 +140,6 @@
         overflow-y: auto;
     }
 
-    /* Custom Scrollbar */
     .card-body::-webkit-scrollbar {
         width: 6px;
     }
@@ -153,6 +154,7 @@
         border-radius: 10px;
     }
 
+    /* Form Sections */
     .form-section {
         background: #f8fafc;
         border-radius: 20px;
@@ -193,6 +195,7 @@
 
     .form-group {
         flex: 1;
+        min-width: 200px;
         margin-bottom: 20px;
     }
 
@@ -270,11 +273,12 @@
         background: white;
     }
 
-    .form-control:focus + .input-icon {
-        color: #0a3d2e;
+    .form-control.error {
+        border-color: #dc2626 !important;
+        box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
     }
 
-    /* Price Input with Currency Symbol */
+    /* Price Input */
     .price-input-wrapper {
         position: relative;
         display: flex;
@@ -294,7 +298,7 @@
         padding-left: 44px;
     }
 
-    /* File Upload for Main Image */
+    /* File Upload */
     .file-upload {
         position: relative;
         margin-top: 8px;
@@ -346,7 +350,7 @@
         text-align: center;
     }
 
-    /* Main Image Preview */
+    /* Image Preview */
     .image-preview {
         margin-top: 15px;
         text-align: center;
@@ -360,23 +364,6 @@
         border: 2px solid #e2e8f0;
         padding: 5px;
         background: white;
-    }
-
-    /* Multiple Images Section */
-    .extra-images-section {
-        margin-top: 20px;
-        padding-top: 15px;
-        border-top: 1px solid #eef2f6;
-    }
-
-    .extra-images-label {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
     }
 
     .extra-images-grid {
@@ -453,28 +440,54 @@
         transform: translateY(-1px);
     }
 
-    .upload-progress {
-        display: none;
-        margin-top: 10px;
+    /* Submit Button */
+    .btn-submit {
         width: 100%;
-        height: 4px;
-        background: #e2e8f0;
-        border-radius: 4px;
+        background: linear-gradient(135deg, #0a3d2e, #0c4d3a);
+        color: white;
+        border: none;
+        padding: 16px;
+        border-radius: 16px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 10px;
+        position: relative;
         overflow: hidden;
     }
 
-    .upload-progress-bar {
-        width: 0%;
-        height: 100%;
-        background: #0a3d2e;
-        transition: width 0.3s;
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(10, 61, 46, 0.4);
     }
 
-    .upload-status {
-        font-size: 0.7rem;
-        color: #5b6e7c;
-        margin-top: 5px;
-        text-align: center;
+    .btn-submit:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-submit .spinner {
+        display: none;
+        animation: spin 1s linear infinite;
+    }
+
+    .btn-submit.loading .spinner {
+        display: inline-block;
+    }
+
+    .btn-submit.loading .btn-text {
+        display: none;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 
     /* Info Alert */
@@ -498,56 +511,6 @@
         margin: 0;
         font-size: 0.85rem;
         color: #5b6e7c;
-    }
-
-    /* Submit Button */
-    .btn-submit {
-        width: 100%;
-        background: linear-gradient(135deg, #0a3d2e, #0c4d3a);
-        color: white;
-        border: none;
-        padding: 16px;
-        border-radius: 16px;
-        font-size: 1rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        margin-top: 10px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .btn-submit::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-
-    .btn-submit:hover::before {
-        width: 300px;
-        height: 300px;
-    }
-
-    .btn-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px -5px rgba(10, 61, 46, 0.4);
-    }
-
-    .btn-submit:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-        transform: none;
     }
 
     /* Tips Section */
@@ -592,7 +555,6 @@
         font-size: 0.7rem;
     }
 
-    /* Back Link */
     .back-link {
         text-align: center;
         margin-top: 20px;
@@ -657,6 +619,18 @@
         border-left: 4px solid #2563eb;
     }
 
+    /* Help text */
+    .help-text {
+        font-size: 0.7rem;
+        color: #5b6e7c;
+        display: block;
+        margin-top: 4px;
+    }
+
+    .help-text i {
+        margin-right: 4px;
+    }
+
     @media (max-width: 768px) {
         .form-row {
             flex-direction: column;
@@ -684,6 +658,9 @@
         .extra-images-grid {
             grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
         }
+        .form-group {
+            min-width: 100%;
+        }
     }
 </style>
 
@@ -698,7 +675,7 @@
         </div>
 
         <div class="card-body">
-            <!-- Display Messages -->
+            <!-- Display Django Messages -->
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert-message alert-{{ message.tags }}">
@@ -708,7 +685,20 @@
                 {% endfor %}
             {% endif %}
 
-            <form method="POST" enctype="multipart/form-data" id="sellBookForm">
+            <!-- Display Form Errors -->
+            {% if errors %}
+                <div class="alert-message alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Please correct the following errors:
+                    <ul style="margin-top:5px;padding-left:20px;">
+                        {% for error in errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data" id="sellBookForm" novalidate>
                 {% csrf_token %}
 
                 <!-- Basic Information Section -->
@@ -731,8 +721,10 @@
                                        id="title"
                                        class="form-control" 
                                        placeholder="Enter book title"
+                                       value="{{ form_data.title|default:'' }}"
                                        required>
                             </div>
+                            <small class="help-text"><i class="fas fa-info-circle"></i> Minimum 2 characters</small>
                         </div>
 
                         <div class="form-group">
@@ -747,8 +739,10 @@
                                        id="author"
                                        class="form-control" 
                                        placeholder="Enter author name"
+                                       value="{{ form_data.author|default:'' }}"
                                        required>
                             </div>
+                            <small class="help-text"><i class="fas fa-info-circle"></i> Minimum 2 characters</small>
                         </div>
                     </div>
 
@@ -764,8 +758,10 @@
                                        name="isbn" 
                                        id="isbn"
                                        class="form-control" 
-                                       placeholder="ISBN (optional)">
+                                       placeholder="ISBN (10 or 13 digits)"
+                                       value="{{ form_data.isbn|default:'' }}">
                             </div>
+                            <small class="help-text"><i class="fas fa-info-circle"></i> 10 or 13 digit format</small>
                         </div>
 
                         <div class="form-group">
@@ -775,16 +771,16 @@
                             <div class="input-wrapper">
                                 <i class="fas fa-language input-icon"></i>
                                 <select name="language" id="language" class="form-control">
-                                    <option value="English">English</option>
-                                    <option value="Hindi">Hindi</option>
-                                    <option value="Tamil">Tamil</option>
-                                    <option value="Telugu">Telugu</option>
-                                    <option value="Kannada">Kannada</option>
-                                    <option value="Malayalam">Malayalam</option>
-                                    <option value="Bengali">Bengali</option>
-                                    <option value="Marathi">Marathi</option>
-                                    <option value="Gujarati">Gujarati</option>
-                                    <option value="Punjabi">Punjabi</option>
+                                    <option value="English" {% if form_data.language == 'English' %}selected{% endif %}>English</option>
+                                    <option value="Hindi" {% if form_data.language == 'Hindi' %}selected{% endif %}>Hindi</option>
+                                    <option value="Tamil" {% if form_data.language == 'Tamil' %}selected{% endif %}>Tamil</option>
+                                    <option value="Telugu" {% if form_data.language == 'Telugu' %}selected{% endif %}>Telugu</option>
+                                    <option value="Kannada" {% if form_data.language == 'Kannada' %}selected{% endif %}>Kannada</option>
+                                    <option value="Malayalam" {% if form_data.language == 'Malayalam' %}selected{% endif %}>Malayalam</option>
+                                    <option value="Bengali" {% if form_data.language == 'Bengali' %}selected{% endif %}>Bengali</option>
+                                    <option value="Marathi" {% if form_data.language == 'Marathi' %}selected{% endif %}>Marathi</option>
+                                    <option value="Gujarati" {% if form_data.language == 'Gujarati' %}selected{% endif %}>Gujarati</option>
+                                    <option value="Punjabi" {% if form_data.language == 'Punjabi' %}selected{% endif %}>Punjabi</option>
                                 </select>
                             </div>
                         </div>
@@ -813,9 +809,10 @@
                                        placeholder="0.00"
                                        step="0.01"
                                        min="0"
+                                       value="{{ form_data.price|default:'' }}"
                                        required>
                             </div>
-                            <small style="color: #5b6e7c; font-size: 0.7rem;">Your selling price (after discount)</small>
+                            <small class="help-text"><i class="fas fa-info-circle"></i> Your selling price (after discount)</small>
                         </div>
 
                         <div class="form-group">
@@ -831,9 +828,10 @@
                                        class="form-control price-input" 
                                        placeholder="0.00"
                                        step="0.01"
-                                       min="0">
+                                       min="0"
+                                       value="{{ form_data.mrp|default:'' }}">
                             </div>
-                            <small style="color: #5b6e7c; font-size: 0.7rem;">Original price before discount</small>
+                            <small class="help-text"><i class="fas fa-info-circle"></i> Original price before discount</small>
                         </div>
                     </div>
 
@@ -850,11 +848,11 @@
                                        id="stock"
                                        class="form-control" 
                                        placeholder="Number of copies available"
-                                       value="1"
+                                       value="{{ form_data.stock|default:'1' }}"
                                        min="0"
                                        required>
                             </div>
-                            <small style="color: #5b6e7c; font-size: 0.7rem;">How many copies of this book do you have?</small>
+                            <small class="help-text"><i class="fas fa-info-circle"></i> How many copies of this book do you have?</small>
                         </div>
 
                         <div class="form-group">
@@ -868,10 +866,10 @@
                                        id="low_stock_threshold"
                                        class="form-control" 
                                        placeholder="Alert when stock below"
-                                       value="5"
+                                       value="{{ form_data.low_stock_threshold|default:'5' }}"
                                        min="1">
                             </div>
-                            <small style="color: #5b6e7c; font-size: 0.7rem;">Get notified when stock falls below this number</small>
+                            <small class="help-text"><i class="fas fa-info-circle"></i> Get notified when stock falls below this number</small>
                         </div>
                     </div>
 
@@ -883,14 +881,14 @@
                             <i class="fas fa-folder input-icon"></i>
                             <select name="category" id="category" class="form-control">
                                 <option value="">Select a category</option>
-                                <option value="Engineering">📘 Engineering</option>
-                                <option value="School Books">📚 School Books</option>
-                                <option value="Competitive Exams">📖 Competitive Exams</option>
-                                <option value="Fiction">🎭 Fiction</option>
-                                <option value="Non-Fiction">📕 Non-Fiction</option>
-                                <option value="Academic">🎓 Academic</option>
-                                <option value="Children's Books">🧸 Children's Books</option>
-                                <option value="Others">📌 Others</option>
+                                <option value="Engineering" {% if form_data.category == 'Engineering' %}selected{% endif %}>📘 Engineering</option>
+                                <option value="School Books" {% if form_data.category == 'School Books' %}selected{% endif %}>📚 School Books</option>
+                                <option value="Competitive Exams" {% if form_data.category == 'Competitive Exams' %}selected{% endif %}>📖 Competitive Exams</option>
+                                <option value="Fiction" {% if form_data.category == 'Fiction' %}selected{% endif %}>🎭 Fiction</option>
+                                <option value="Non-Fiction" {% if form_data.category == 'Non-Fiction' %}selected{% endif %}>📕 Non-Fiction</option>
+                                <option value="Academic" {% if form_data.category == 'Academic' %}selected{% endif %}>🎓 Academic</option>
+                                <option value="Children's Books" {% if form_data.category == "Children's Books" %}selected{% endif %}>🧸 Children's Books</option>
+                                <option value="Others" {% if form_data.category == 'Others' %}selected{% endif %}>📌 Others</option>
                             </select>
                         </div>
                     </div>
@@ -913,8 +911,9 @@
                                       id="description"
                                       class="form-control" 
                                       rows="5"
-                                      placeholder="Describe your book - condition, edition, key features, table of contents, etc."></textarea>
+                                      placeholder="Describe your book - condition, edition, key features, table of contents, etc.">{{ form_data.description|default:'' }}</textarea>
                         </div>
+                        <small class="help-text"><i class="fas fa-info-circle"></i> Detailed description helps buyers make a decision</small>
                     </div>
                 </div>
 
@@ -947,16 +946,18 @@
                         <div class="image-preview" id="imagePreview">
                             <img id="previewImg" src="#" alt="Preview">
                         </div>
-                        <small style="color: #5b6e7c; font-size: 0.7rem; display: block; margin-top: 8px;">
+                        <small class="help-text">
                             <i class="fas fa-info-circle"></i> Accepted formats: JPG, PNG, JPEG. Max size: 5MB
                         </small>
                     </div>
 
                     <!-- Multiple Additional Images -->
-                    <div class="extra-images-section">
-                        <div class="extra-images-label">
-                            <i class="fas fa-images"></i> Additional Images (Optional)
-                            <span style="font-size: 0.7rem; color: #5b6e7c;">Add more photos of your book</span>
+                    <div class="extra-images-section" style="margin-top:20px;padding-top:15px;border-top:1px solid #eef2f6;">
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+                            <span style="font-size:0.85rem;font-weight:600;color:#2c3e50;">
+                                <i class="fas fa-images"></i> Additional Images
+                            </span>
+                            <span style="font-size:0.7rem;color:#5b6e7c;">(Optional - up to 5 images)</span>
                         </div>
                         
                         <div class="extra-images-grid" id="extraImagesGrid">
@@ -967,16 +968,8 @@
                             <i class="fas fa-plus-circle"></i> Add More Images
                         </button>
                         <input type="file" id="extraImages" name="extra_images" accept="image/*" multiple style="display: none;" onchange="previewExtraImages(this)">
-                        
-                        <div class="upload-progress" id="uploadProgress">
-                            <div class="upload-progress-bar" id="uploadProgressBar"></div>
-                        </div>
-                        <div class="upload-status" id="uploadStatus"></div>
                     </div>
                 </div>
-
-                <!-- Hidden field for extra images data -->
-                <input type="hidden" name="extra_images_data" id="extraImagesData" value="">
 
                 <!-- Info Alert -->
                 <div class="info-alert">
@@ -985,7 +978,8 @@
                 </div>
 
                 <button type="submit" class="btn-submit" id="submitBtn">
-                    <i class="fas fa-upload"></i> List Book for Sale
+                    <span class="spinner"><i class="fas fa-spinner fa-pulse"></i></span>
+                    <span class="btn-text"><i class="fas fa-upload"></i> List Book for Sale</span>
                 </button>
 
                 <!-- Tips Section -->
@@ -1016,9 +1010,9 @@
 </div>
 
 <script>
-    let extraImagesFiles = [];
-
-    // Main image preview
+    // =============================================
+    // MAIN IMAGE UPLOAD & PREVIEW
+    // =============================================
     const imageUpload = document.getElementById('imageUpload');
     const fileName = document.getElementById('fileName');
     const imagePreview = document.getElementById('imagePreview');
@@ -1056,6 +1050,9 @@
                     imagePreview.style.display = 'block';
                 }
                 reader.readAsDataURL(file);
+                
+                // Remove error class if exists
+                this.classList.remove('error');
             } else {
                 fileName.textContent = 'No file chosen';
                 imagePreview.style.display = 'none';
@@ -1063,26 +1060,41 @@
         });
     }
 
-    // Preview extra images
+    // =============================================
+    // EXTRA IMAGES UPLOAD & PREVIEW
+    // =============================================
+    let extraImagesFiles = [];
+    const MAX_EXTRA_IMAGES = 5;
+
     function previewExtraImages(input) {
         const grid = document.getElementById('extraImagesGrid');
         const files = Array.from(input.files);
         
+        // Check if we already have too many images
+        const currentCount = extraImagesFiles.length;
+        if (currentCount + files.length > MAX_EXTRA_IMAGES) {
+            alert(`You can only upload up to ${MAX_EXTRA_IMAGES} additional images. You already have ${currentCount} images.`);
+            input.value = '';
+            return;
+        }
+        
+        let validFiles = 0;
+        
         files.forEach((file, index) => {
-            // Validate file size
+            // Validate file size (max 5MB)
             if (file.size > 5 * 1024 * 1024) {
-                alert(`Image ${file.name} is larger than 5MB`);
+                alert(`Image "${file.name}" is larger than 5MB and will be skipped.`);
                 return;
             }
             
             // Validate file type
             if (!file.type.startsWith('image/')) {
-                alert(`${file.name} is not an image file`);
+                alert(`"${file.name}" is not an image file and will be skipped.`);
                 return;
             }
             
+            validFiles++;
             const reader = new FileReader();
-            const previewId = `preview_${Date.now()}_${index}`;
             
             reader.onload = function(e) {
                 const previewDiv = document.createElement('div');
@@ -1090,7 +1102,7 @@
                 previewDiv.setAttribute('data-temp', 'true');
                 previewDiv.innerHTML = `
                     <img src="${e.target.result}" alt="Preview">
-                    <button type="button" class="remove-image-btn" onclick="removeTempImage(this)">
+                    <button type="button" class="remove-image-btn" onclick="removeExtraImage(this)">
                         <i class="fas fa-times"></i>
                     </button>
                 `;
@@ -1105,102 +1117,139 @@
         // Clear the input to allow re-uploading same files
         input.value = '';
         
-        // Update hidden field
-        updateExtraImagesData();
+        if (validFiles === 0 && files.length > 0) {
+            alert('No valid images were added. Please check file types and sizes.');
+        }
+        
+        // Update button text
+        updateAddMoreButton();
     }
 
-    // Remove temp image
-    function removeTempImage(button) {
+    function removeExtraImage(button) {
         const previewDiv = button.closest('.extra-image-preview');
         const index = Array.from(previewDiv.parentNode.children).indexOf(previewDiv);
-        if (index !== -1 && index < extraImagesFiles.length) {
+        
+        // Remove from files array
+        if (index >= 0 && index < extraImagesFiles.length) {
             extraImagesFiles.splice(index, 1);
         }
+        
+        // Remove from DOM
         previewDiv.remove();
-        updateExtraImagesData();
+        
+        // Update button text
+        updateAddMoreButton();
     }
 
-    // Update hidden field with extra images data
-    function updateExtraImagesData() {
-        // For now, we're storing files in memory
-        // They will be uploaded via AJAX or as part of form submission
-        console.log(`Total extra images: ${extraImagesFiles.length}`);
+    function updateAddMoreButton() {
+        const btn = document.querySelector('.add-more-btn');
+        const count = extraImagesFiles.length;
+        if (btn) {
+            if (count >= MAX_EXTRA_IMAGES) {
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = 'inline-flex';
+                btn.innerHTML = `<i class="fas fa-plus-circle"></i> Add More Images (${count}/${MAX_EXTRA_IMAGES})`;
+            }
+        }
     }
 
-    // Price validation
-    const priceInput = document.getElementById('price');
-    const mrpInput = document.getElementById('mrp');
-    
-    if (priceInput) {
-        priceInput.addEventListener('input', function() {
-            if (this.value < 0) this.value = 0;
-            if (this.value > 100000) this.value = 100000;
-        });
-    }
-    
-    if (mrpInput) {
-        mrpInput.addEventListener('input', function() {
-            if (this.value < 0) this.value = 0;
-            if (this.value > 100000) this.value = 100000;
-        });
-    }
-
-    // Stock validation
-    const stockInput = document.getElementById('stock');
-    if (stockInput) {
-        stockInput.addEventListener('input', function() {
-            if (this.value < 0) this.value = 0;
-            if (this.value > 10000) this.value = 10000;
-        });
-    }
-
-    // Form submission with extra images
+    // =============================================
+    // FORM VALIDATION & SUBMISSION
+    // =============================================
     const form = document.getElementById('sellBookForm');
     const submitBtn = document.getElementById('submitBtn');
-    
+
+    // Real-time validation for title, author, price
+    function validateField(fieldId, errorMessage, condition) {
+        const field = document.getElementById(fieldId);
+        if (!field) return true;
+        
+        const isValid = condition(field.value);
+        if (!isValid && field.value) {
+            field.classList.add('error');
+        } else {
+            field.classList.remove('error');
+        }
+        return isValid || !field.value;
+    }
+
+    document.getElementById('title')?.addEventListener('input', function() {
+        if (this.value.trim().length < 2 && this.value) {
+            this.classList.add('error');
+        } else {
+            this.classList.remove('error');
+        }
+    });
+
+    document.getElementById('author')?.addEventListener('input', function() {
+        if (this.value.trim().length < 2 && this.value) {
+            this.classList.add('error');
+        } else {
+            this.classList.remove('error');
+        }
+    });
+
+    document.getElementById('price')?.addEventListener('input', function() {
+        if (this.value && parseFloat(this.value) <= 0) {
+            this.classList.add('error');
+        } else {
+            this.classList.remove('error');
+        }
+    });
+
+    // Form submit handler
     if (form) {
-        form.addEventListener('submit', async function(e) {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const title = document.getElementById('title').value.trim();
-            const author = document.getElementById('author').value.trim();
-            const price = document.getElementById('price').value;
-            const stock = document.getElementById('stock').value;
-            const image = document.getElementById('imageUpload').files[0];
-
-            if (!title) {
-                alert('Please enter the book title');
-                document.getElementById('title').focus();
-                return false;
+            // Get values
+            const title = document.getElementById('title')?.value.trim() || '';
+            const author = document.getElementById('author')?.value.trim() || '';
+            const price = document.getElementById('price')?.value || '';
+            const stock = document.getElementById('stock')?.value || '';
+            const image = document.getElementById('imageUpload')?.files[0] || null;
+            
+            // Validate
+            let errors = [];
+            
+            if (!title || title.length < 2) {
+                errors.push('Book title is required (minimum 2 characters)');
+                document.getElementById('title')?.classList.add('error');
+            } else {
+                document.getElementById('title')?.classList.remove('error');
             }
-
-            if (!author) {
-                alert('Please enter the author name');
-                document.getElementById('author').focus();
-                return false;
+            
+            if (!author || author.length < 2) {
+                errors.push('Author name is required (minimum 2 characters)');
+                document.getElementById('author')?.classList.add('error');
+            } else {
+                document.getElementById('author')?.classList.remove('error');
             }
-
-            if (!price || price <= 0) {
-                alert('Please enter a valid price');
-                document.getElementById('price').focus();
-                return false;
+            
+            if (!price || parseFloat(price) <= 0) {
+                errors.push('Please enter a valid price (greater than 0)');
+                document.getElementById('price')?.classList.add('error');
+            } else {
+                document.getElementById('price')?.classList.remove('error');
             }
-
-            if (!stock || stock < 0) {
-                alert('Please enter a valid stock quantity');
-                document.getElementById('stock').focus();
-                return false;
-            }
-
+            
             if (!image) {
-                alert('Please upload a book cover image');
+                errors.push('Please upload a book cover image');
+                document.getElementById('imageUpload')?.classList.add('error');
+            } else {
+                document.getElementById('imageUpload')?.classList.remove('error');
+            }
+            
+            if (errors.length > 0) {
+                alert('Please fix the following errors:\n\n' + errors.join('\n'));
                 return false;
             }
 
             // Show loading state
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Listing Book...';
+            submitBtn.classList.add('loading');
             submitBtn.disabled = true;
-
+            
             // Create FormData and submit
             const formData = new FormData(form);
             
@@ -1209,40 +1258,52 @@
                 formData.append('extra_images', extraImagesFiles[i]);
             }
 
-            try {
-                const response = await fetch(window.location.href, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCSRFToken(),
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: formData
-                });
-                
-                const data = await response.json();
-                
+            // Submit via AJAX
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(async (response) => {
+    const text = await response.text();
+    console.log("Response:", text);
+
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        throw new Error("Server returned HTML instead of JSON");
+    }
+})
+            .then(data => {
                 if (data.success) {
                     showMessage(data.message, 'success');
                     setTimeout(() => {
                         window.location.href = data.redirect_url || "{% url 'accounts:seller_dashboard' %}";
                     }, 1500);
                 } else {
-                    showMessage(data.error, 'error');
-                    submitBtn.innerHTML = '<i class="fas fa-upload"></i> List Book for Sale';
+                    showMessage(data.message || 'Error uploading book', 'error');
+                    submitBtn.classList.remove('loading');
                     submitBtn.disabled = false;
                 }
-            } catch (error) {
+            })
+            .catch(error => {
                 console.error('Error:', error);
-                showMessage('An error occurred. Please try again.', 'error');
-                submitBtn.innerHTML = '<i class="fas fa-upload"></i> List Book for Sale';
+                showMessage(error.message || 'An error occurred. Please try again.', 'error');
+                submitBtn.classList.remove('loading');
                 submitBtn.disabled = false;
-            }
+            });
             
             return false;
         });
     }
 
-    // Helper function to get CSRF token
+    // =============================================
+    // HELPER FUNCTIONS
+    // =============================================
+    
     function getCSRFToken() {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -1258,19 +1319,28 @@
         return cookieValue;
     }
 
-    // Helper function to show messages
     function showMessage(message, type) {
         const container = document.querySelector('.card-body');
+        const existingAlerts = container.querySelectorAll('.alert-message');
+        existingAlerts.forEach(alert => alert.remove());
+        
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert-message alert-${type}`;
-        alertDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+        const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+        alertDiv.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
         container.insertBefore(alertDiv, container.firstChild);
-        setTimeout(() => alertDiv.remove(), 3000);
+        
+        setTimeout(() => {
+            alertDiv.style.opacity = '0';
+            alertDiv.style.transition = 'opacity 0.3s';
+            setTimeout(() => alertDiv.remove(), 300);
+        }, 5000);
     }
 
-    // Add focus effects
-    const inputs = document.querySelectorAll('.form-control');
-    inputs.forEach(input => {
+    // =============================================
+    // FOCUS EFFECTS
+    // =============================================
+    document.querySelectorAll('.form-control').forEach(input => {
         input.addEventListener('focus', function() {
             const wrapper = this.closest('.input-wrapper, .price-input-wrapper');
             if (wrapper) {
@@ -1288,6 +1358,30 @@
             }
         });
     });
+
+    // =============================================
+    // PRICE & STOCK VALIDATION
+    // =============================================
+    document.getElementById('price')?.addEventListener('input', function() {
+        if (this.value < 0) this.value = 0;
+        if (this.value > 100000) this.value = 100000;
+    });
+
+    document.getElementById('mrp')?.addEventListener('input', function() {
+        if (this.value < 0) this.value = 0;
+        if (this.value > 100000) this.value = 100000;
+    });
+
+    document.getElementById('stock')?.addEventListener('input', function() {
+        if (this.value < 0) this.value = 0;
+        if (this.value > 10000) this.value = 10000;
+    });
+
+    // =============================================
+    // INIT
+    // =============================================
+    console.log('✅ Sell Book page loaded successfully');
+    console.log(`📸 Extra images: ${extraImagesFiles.length}/${MAX_EXTRA_IMAGES}`);
 </script>
 
 {% endblock %}
